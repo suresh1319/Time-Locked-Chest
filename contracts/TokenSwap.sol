@@ -45,6 +45,9 @@ contract TokenSwap is Ownable, ReentrancyGuard {
         require(_amount > 0, "Amount must be greater than 0");
         
         uint256 ethAmount = _amount / rate;
+        // BUG-4: Guard against integer division rounding to zero.
+        require(ethAmount > 0, "Token amount too small to sell");
+
         uint256 fee = (ethAmount * sellFeePercentage) / 100;
         uint256 payout = ethAmount - fee;
 
@@ -57,6 +60,9 @@ contract TokenSwap is Ownable, ReentrancyGuard {
 
         emit TokensSold(msg.sender, address(token), _amount, payout);
     }
+
+    // BUG-5: Allow direct ETH deposits for liquidity funding.
+    receive() external payable {}
 
     // Owner functions to manage liquidity and settings
     function withdrawETH() external onlyOwner {

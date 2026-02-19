@@ -45,6 +45,16 @@ export default function SwapComponent({ provider, account, onSwapSuccess }) {
 
     const handleSwap = async () => {
         if (!amount || !CONTRACTS.TOKEN_SWAP) return;
+
+        // BUG-12: Pre-flight check: abort before wallet prompt if sell amount too small.
+        if (mode === 'sell') {
+            const ethOut = parseFloat(amount) / Number(rate);
+            if (ethOut < 1e-9) {
+                alert('Amount too small — would result in 0 ETH output. Please enter a larger amount.');
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {

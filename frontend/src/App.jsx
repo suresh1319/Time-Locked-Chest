@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import WalletConnect from './components/WalletConnect';
 import StakeForm from './components/StakeForm';
 import ChestsList from './components/ChestsList';
@@ -17,6 +17,22 @@ function App() {
     const handleStakeSuccess = () => {
         setRefreshTrigger(prev => prev + 1);
     };
+
+    // BUG-10: Keep UI in sync when user changes account or network in MetaMask.
+    useEffect(() => {
+        if (!window.ethereum) return;
+        const handleAccountsChanged = (accounts) => {
+            setAccount(accounts[0] || null);
+            if (!accounts[0]) setProvider(null);
+        };
+        const handleChainChanged = () => window.location.reload();
+        window.ethereum.on('accountsChanged', handleAccountsChanged);
+        window.ethereum.on('chainChanged', handleChainChanged);
+        return () => {
+            window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+            window.ethereum.removeListener('chainChanged', handleChainChanged);
+        };
+    }, []);
 
     return (
         <div className="min-h-screen py-8 px-4">
@@ -86,7 +102,7 @@ function App() {
                         {/* Statistics and Transactions */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <Statistics provider={provider} account={account} refreshTrigger={refreshTrigger} />
-                            <Transactions provider={provider} />
+                            <Transactions provider={provider} refreshTrigger={refreshTrigger} />
                         </div>
 
                         {/* Two-column layout for Game */}

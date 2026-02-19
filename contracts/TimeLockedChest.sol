@@ -14,13 +14,13 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 contract TimeLockedChest is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
-    // ========== STATE VARIABLES ==========
     
     IERC20 public immutable token;
     
     uint256 public totalLocked;
     uint256 public activeLocked; // Tracks currently locked tokens
-    uint256 public totalPaidOut;
+    uint256 public totalPaidOut;    // Gross payout (before fee deduction)
+    uint256 public totalFeesCollected; // Total fees retained by the treasury
     
     // Duration constants (in seconds)
     uint256 public constant DURATION_1H = 1 hours;
@@ -32,7 +32,6 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
     uint256 public minWithdraw = 0;
     uint256 public fee = 2; // 2% default fee
 
-    // ========== STRUCTS ==========
     
     struct Lock {
         address user;
@@ -43,11 +42,8 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
         uint256 randomSeed;
     }
     
-    // ========== MAPPINGS ==========
     
     mapping(address => Lock[]) public userLocks;
-    
-    // ========== EVENTS ==========
     
     event LockCreated(
         address indexed user,
@@ -81,7 +77,15 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
     function lock(uint256 amount, uint256 duration) external nonReentrant {
         require(amount >= minStake, "Amount below minimum stake");
         require(duration == DURATION_1H || duration == DURATION_6H || duration == DURATION_24H, "Invalid duration");
-        
+
+        // BUG-2: Verify treasury solvency before accepting the stake.
+        // Worst-case payout is 5x the staked amount (jackpot multiplier).
+        uint256 maxPossiblePayout = amount * 5;
+        require(
+            token.balanceOf(address(this)) >= activeLocked + maxPossiblePayout,
+            "Treasury too low for this stake"
+        );
+
         token.safeTransferFrom(msg.sender, address(this), amount);
         
         uint256 userLockCount = userLocks[msg.sender].length;
@@ -128,13 +132,14 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
 
         require(payoutAfterFee >= minWithdraw, "Payout below minimum withdrawal");
         require(token.balanceOf(address(this)) >= payout, "Insufficient treasury balance");
-        
-        totalPaidOut += payoutAfterFee;
+
+        // BUG-3: Track gross payout and fees separately for accurate accounting.
+        totalPaidOut += payout;         // Gross amount before fee
+        totalFeesCollected += feeAmount; // Fee retained by treasury
         activeLocked -= userLock.amount;
         
         // Transfer payout to user
         token.safeTransfer(msg.sender, payoutAfterFee);
-        // Fee stays in contract (treasury) for now
         
         emit LockClaimed(msg.sender, lockIndex, userLock.amount, payoutAfterFee, guaranteedAmount, riskReward);
     }
@@ -165,7 +170,7 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
         Lock memory userLock = userLocks[user][lockIndex];
         
         uint256 guaranteePercentage = _calculateGuaranteePercentage(userLock.amount, userLock.duration);
-        uint256 guaranteedAmount = (userLock.amount * guaranteePercentage) / 100;
+        guaranteedAmount = (userLock.amount * guaranteePercentage) / 100;
         
         uint256 riskAmount = userLock.amount - guaranteedAmount;
         

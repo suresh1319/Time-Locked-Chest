@@ -8,7 +8,7 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
     const [chests, setChests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [claiming, setClaiming] = useState({});
-    const [showAll, setShowAll] = useState(false);
+
 
     useEffect(() => {
         if (provider && account) {
@@ -138,9 +138,6 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
         );
     }
 
-    // Show only 5 chests unless showAll is true
-    const displayedChests = showAll ? chests : chests.slice(0, 5);
-
     return (
         <div className="card">
             <div className="flex items-center justify-between mb-6">
@@ -150,8 +147,8 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
                 </span>
             </div>
 
-            <div className="space-y-4">
-                {displayedChests.map((chest) => {
+            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                {chests.map((chest) => {
                     const unlocked = isUnlocked(chest.lockTime, chest.duration);
                     const timeRemaining = getTimeRemaining(chest.lockTime, chest.duration);
 
@@ -239,15 +236,6 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
                     );
                 })}
             </div>
-
-            {chests.length > 5 && (
-                <button
-                    onClick={() => setShowAll(!showAll)}
-                    className="mt-4 w-full btn-primary text-sm py-2"
-                >
-                    {showAll ? '▲ Show Less' : `▼ View All (${chests.length} chests)`}
-                </button>
-            )}
         </div>
     );
 }

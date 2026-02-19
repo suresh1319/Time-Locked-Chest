@@ -3,9 +3,9 @@ export const TARGET_CHAIN_ID = 11155111;
 
 export const CONTRACTS = {
     // Sepolia Addresses
-    SCAI_TOKEN: '0x0584c33179edfF256d4ed1FD36F4a88ffFf009Ce',
-    TIME_LOCKED_CHEST: '0x04C14110A4C2B5D0Ab55D91924E6B52f3CA0a25d',
-    TOKEN_SWAP: '0x4EA41614A8Ddc3dE081eDE207913A59651F0C8a3'
+    SCAI_TOKEN: '0x9bd5De757aE75292cf82E3508600f62FCbC56c9C',
+    TIME_LOCKED_CHEST: '0xb3BaaDF2A33E381fD2d53a35e4428274651F0Fa4',
+    TOKEN_SWAP: '0x7cB512Aba8d01DC17ef72C009Cf4A9c3878C1c7D'
 };
 
 export const DURATIONS = {
@@ -22,6 +22,6 @@ export const NETWORK_PARAMS = {
         symbol: 'ETH',
         decimals: 18
     },
-    rpcUrls: ['https://sepolia.infura.io/v3/'],
+    rpcUrls: ['https://rpc.sepolia.org'],
     blockExplorerUrls: ['https://sepolia.etherscan.io']
 };

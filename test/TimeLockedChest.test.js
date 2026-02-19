@@ -165,6 +165,20 @@ describe("TimeLockedChest", function () {
             expect(await scaiToken.balanceOf(user1.address)).to.equal(initialUserBalance - amount);
             expect(await scaiToken.balanceOf(await timeLockedChest.getAddress())).to.equal(initialContractBalance + amount);
         });
+
+        it("BUG-2: Should revert if treasury cannot cover 5x max payout", async function () {
+            // Treasury has 100,000 tokens. 
+            // We need amount * 5 > 100,000 + activeLocked (0) => amount > 20,000.
+            const amount = ethers.parseEther("20001");
+
+            // Fund user1
+            await scaiToken.connect(owner).transfer(user1.address, amount);
+            await scaiToken.connect(user1).approve(await timeLockedChest.getAddress(), amount);
+
+            await expect(
+                timeLockedChest.connect(user1).lock(amount, DURATION_1H)
+            ).to.be.revertedWith("Treasury too low for this stake");
+        });
     });
 
     describe("Claiming Rewards", function () {
@@ -240,6 +254,26 @@ describe("TimeLockedChest", function () {
 
             expect(finalUserBalance).to.be.gt(initialUserBalance);
         });
+
+        it("BUG-3: Should track gross payout and accumulate fees", async function () {
+            await time.increase(DURATION_1H + 1);
+
+            const initialPaidOut = await timeLockedChest.totalPaidOut();
+            const initialFees = await timeLockedChest.totalFeesCollected();
+
+            await timeLockedChest.connect(user1).claim(0);
+
+            const finalPaidOut = await timeLockedChest.totalPaidOut();
+            const finalFees = await timeLockedChest.totalFeesCollected();
+
+            const paidOutDiff = finalPaidOut - initialPaidOut;
+            const feesDiff = finalFees - initialFees;
+
+            // Fee is 2%
+            // Gross Payout (paidOutDiff) * 2% should equal feesDiff
+            expect(feesDiff).to.equal(paidOutDiff * 2n / 100n);
+            expect(paidOutDiff).to.be.gt(0);
+        });
     });
 
     describe("Guarantee Percentage", function () {
@@ -249,9 +283,9 @@ describe("TimeLockedChest", function () {
             await timeLockedChest.connect(user1).lock(amount, DURATION_1H);
 
             const preview = await timeLockedChest.previewPayout(user1.address, 0);
-            // Expected guarantee: 30% (base)
+            // Expected guarantee: ~20% (base) since bonus is negligible
             expect(preview.guaranteedAmount).to.be.closeTo(
-                amount * 30n / 100n,
+                amount * 20n / 100n,
                 ethers.parseEther("0.1")
             );
         });
@@ -352,51 +386,5 @@ describe("TimeLockedChest", function () {
         });
     });
 
-    describe("Faucet", function () {
-        const FAUCET_AMOUNT = ethers.parseEther("100");
 
-        it("Should allow user to request tokens", async function () {
-            const initialBalance = await scaiToken.balanceOf(user1.address);
-
-            await timeLockedChest.connect(user1).requestTokens();
-
-            const finalBalance = await scaiToken.balanceOf(user1.address);
-            expect(finalBalance).to.equal(initialBalance + FAUCET_AMOUNT);
-        });
-
-        it("Should update lastFaucetClaim", async function () {
-            await timeLockedChest.connect(user1).requestTokens();
-            const lastClaim = await timeLockedChest.lastFaucetClaim(user1.address);
-            expect(lastClaim).to.be.gt(0);
-        });
-
-        it("Should prevent requesting during cooldown", async function () {
-            await timeLockedChest.connect(user1).requestTokens();
-
-            await expect(
-                timeLockedChest.connect(user1).requestTokens()
-            ).to.be.revertedWith("Faucet cooldown active");
-        });
-
-        it("Should allow requesting after cooldown", async function () {
-            await timeLockedChest.connect(user1).requestTokens();
-
-            // Fast forward 24 hours + 1 second
-            await time.increase(24 * 3600 + 1);
-
-            await expect(timeLockedChest.connect(user1).requestTokens())
-                .to.not.be.reverted;
-        });
-
-        it("Should fail if treasury empty", async function () {
-            // Deploy a fresh chest with 0 balance
-            const TimeLockedChest = await ethers.getContractFactory("TimeLockedChest");
-            const emptyChest = await TimeLockedChest.deploy(await scaiToken.getAddress());
-            // No funding
-
-            await expect(
-                emptyChest.connect(user1).requestTokens()
-            ).to.be.revertedWith("Insufficient treasury balance");
-        });
-    });
 });

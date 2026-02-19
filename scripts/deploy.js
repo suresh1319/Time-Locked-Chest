@@ -50,6 +50,11 @@ async function main() {
     await scaiToken.transfer(tokenSwapAddress, liquidityAmount);
     console.log("   Funded TokenSwap with:", hre.ethers.formatEther(liquidityAmount), "SCAI\n");
 
+    // Provide Treasury Funding to TimeLockedChest (100,000 SCAI)
+    // This allows the contract to pay out rewards immediately
+    await scaiToken.transfer(chestAddress, liquidityAmount);
+    console.log("   Funded TimeLockedChest treasury with:", hre.ethers.formatEther(liquidityAmount), "SCAI\n");
+
     // ========== Save Deployment Addresses ==========
     const deploymentData = {
         network: hre.network.name,

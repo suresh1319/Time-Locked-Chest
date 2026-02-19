@@ -4,7 +4,7 @@ import { TrendingUp, Users, Coins } from 'lucide-react';
 import { CONTRACTS } from '../config';
 import { TIME_LOCKED_CHEST_ABI } from '../contracts/abis';
 
-export default function Statistics({ provider, refreshTrigger }) {
+export default function Statistics({ provider, refreshTrigger }) { // account prop intentionally omitted (global stats only)
     const [stats, setStats] = useState({
         totalLocked: '0',
         totalPaidOut: '0'

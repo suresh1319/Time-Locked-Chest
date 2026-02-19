@@ -4,7 +4,7 @@ import { Clock, TrendingUp } from 'lucide-react';
 import { CONTRACTS } from '../config';
 import { TIME_LOCKED_CHEST_ABI } from '../contracts/abis';
 
-export default function Transactions({ provider }) {
+export default function Transactions({ provider, refreshTrigger }) {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -12,7 +12,7 @@ export default function Transactions({ provider }) {
         if (provider) {
             loadRecentTransactions();
         }
-    }, [provider]);
+    }, [provider, refreshTrigger]); // BUG-8: re-fetch on new stake/claim
 
     const loadRecentTransactions = async () => {
         try {
@@ -34,7 +34,7 @@ export default function Transactions({ provider }) {
             // Combine and sort by block number (most recent first)
             const allEvents = [...lockEvents, ...claimEvents]
                 .sort((a, b) => b.blockNumber - a.blockNumber)
-                .slice(0, 10); // Show only last 10 transactions
+                .slice(0, 50); // Show last 50 transactions
 
             const txData = allEvents.map(event => {
                 const isLock = event.eventName === 'LockCreated';
@@ -77,7 +77,7 @@ export default function Transactions({ provider }) {
             {transactions.length === 0 ? (
                 <p className="text-white/60 text-sm">No recent transactions</p>
             ) : (
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                     {transactions.map((tx, index) => (
                         <div
                             key={index}
@@ -85,8 +85,8 @@ export default function Transactions({ provider }) {
                         >
                             <div className="flex items-center gap-3">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tx.type === 'lock'
-                                        ? 'bg-blue-500/20 text-blue-400'
-                                        : 'bg-green-500/20 text-green-400'
+                                    ? 'bg-blue-500/20 text-blue-400'
+                                    : 'bg-green-500/20 text-green-400'
                                     }`}>
                                     {tx.type === 'lock' ? '🔒' : '🎁'}
                                 </div>

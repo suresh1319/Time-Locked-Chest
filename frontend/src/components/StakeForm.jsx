@@ -147,7 +147,10 @@ export default function StakeForm({ provider, account, onStakeSuccess, refreshTr
         }
     };
 
-    const needsApproval = parseFloat(allowance) < parseFloat(amount || 0);
+    // BUG-6: Use BigInt comparison to avoid float precision issues and NaN from empty string.
+    const needsApproval = !amount
+        ? false
+        : ethers.parseEther(amount || '0') > ethers.parseEther(allowance || '0');
 
     const selectedDuration = Object.values(DURATIONS).find(d => d.value === duration);
 
@@ -193,6 +196,7 @@ export default function StakeForm({ provider, account, onStakeSuccess, refreshTr
                             />
                             <button
                                 onClick={() => setAmount(balance)}
+                                title="⚠️ This will lock your entire SCAI balance"
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-treasure-400 text-sm font-semibold hover:text-treasure-300"
                             >
                                 MAX
@@ -245,11 +249,12 @@ export default function StakeForm({ provider, account, onStakeSuccess, refreshTr
                                 <p className="text-xs text-white/60 mb-1">Potential Payout Range</p>
                                 <p className="text-sm">
                                     <span className="text-red-400 font-semibold">
-                                        {(parseFloat(amount) * (guarantee / 100 + (100 - guarantee) / 100 * 0.5)).toFixed(2)}
+                                        {/* BUG-7: Multiply by 0.98 to show actual after-fee payout */}
+                                        {(parseFloat(amount) * (guarantee / 100 + (100 - guarantee) / 100 * 0.5) * 0.98).toFixed(2)}
                                     </span>
                                     <span className="text-white/60 mx-2">→</span>
                                     <span className="text-green-400 font-semibold">
-                                        {(parseFloat(amount) * (guarantee / 100 + (100 - guarantee) / 100 * 5.0)).toFixed(2)} SCAI
+                                        {(parseFloat(amount) * (guarantee / 100 + (100 - guarantee) / 100 * 5.0) * 0.98).toFixed(2)} SCAI
                                     </span>
                                 </p>
                             </div>
