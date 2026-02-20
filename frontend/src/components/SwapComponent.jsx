@@ -180,7 +180,11 @@ export default function SwapComponent({ provider, account, onSwapSuccess }) {
                         disabled={loading || !amount}
                         className="btn-primary w-full mt-4 flex items-center justify-center gap-2"
                     >
-                        {loading && <RefreshCw className="animate-spin" size={18} />}
+                        {loading ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        ) : (
+                            <RefreshCw size={18} />
+                        )}
                         {loading ? 'Swapping...' : `Swap ${mode === 'buy' ? 'ETH to SCAI' : 'SCAI to ETH'}`}
                     </button>
                 </div>

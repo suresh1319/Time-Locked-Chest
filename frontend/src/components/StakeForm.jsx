@@ -266,17 +266,24 @@ export default function StakeForm({ provider, account, onStakeSuccess, refreshTr
                         <button
                             onClick={handleApprove}
                             disabled={approving || !amount || parseFloat(amount) <= 0}
-                            className="btn-primary w-full"
+                            className="btn-primary w-full flex items-center justify-center gap-2"
                         >
+                            {approving && (
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                            )}
                             {approving ? 'Approving...' : `Approve ${amount || '0'} SCAI`}
                         </button>
                     ) : (
                         <button
                             onClick={handleStake}
                             disabled={staking || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(balance)}
-                            className="btn-primary w-full"
+                            className="btn-primary w-full flex items-center justify-center gap-2"
                         >
-                            <Lock size={20} className="inline mr-2" />
+                            {staking ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                            ) : (
+                                <Lock size={20} />
+                            )}
                             {staking ? 'Locking...' : `Lock ${amount || '0'} SCAI for ${selectedDuration?.label}`}
                         </button>
                     )}

@@ -226,9 +226,13 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
                                 <button
                                     onClick={() => handleClaim(chest.index)}
                                     disabled={claiming[chest.index]}
-                                    className="btn-primary w-full"
+                                    className="btn-primary w-full flex items-center justify-center gap-2"
                                 >
-                                    <Gift size={18} className="inline mr-2" />
+                                    {claiming[chest.index] ? (
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                    ) : (
+                                        <Gift size={18} />
+                                    )}
                                     {claiming[chest.index] ? 'Claiming...' : `Claim ${parseFloat(chest.actualPayout).toFixed(2)} SCAI`}
                                 </button>
                             )}
