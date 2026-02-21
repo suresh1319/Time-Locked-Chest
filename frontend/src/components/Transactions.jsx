@@ -77,7 +77,7 @@ export default function Transactions({ provider, refreshTrigger }) {
             {transactions.length === 0 ? (
                 <p className="text-white/60 text-sm">No recent transactions</p>
             ) : (
-                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2">
                     {transactions.map((tx, index) => (
                         <div
                             key={index}

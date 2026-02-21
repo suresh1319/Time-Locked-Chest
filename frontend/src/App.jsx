@@ -6,13 +6,15 @@ import Statistics from './components/Statistics';
 import SwapComponent from './components/SwapComponent';
 import AdminPanel from './components/AdminPanel';
 import Transactions from './components/Transactions';
-import { Sparkles } from 'lucide-react';
+import UserGuideModal from './components/UserGuideModal';
+import { Sparkles, BookOpen } from 'lucide-react';
 
 function App() {
     const [account, setAccount] = useState(null);
     const [provider, setProvider] = useState(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [showSwap, setShowSwap] = useState(false);
+    const [showGuide, setShowGuide] = useState(false);
 
     const handleStakeSuccess = () => {
         setRefreshTrigger(prev => prev + 1);
@@ -49,6 +51,13 @@ function App() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setShowGuide(true)}
+                            className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-xl transition-all border border-white/10 flex items-center gap-2"
+                        >
+                            <BookOpen size={18} />
+                            Guide
+                        </button>
                         {account && (
                             <button
                                 onClick={() => setShowSwap(true)}
@@ -174,6 +183,11 @@ function App() {
                         />
                     </div>
                 </div>
+            )}
+
+            {/* User Guide Modal */}
+            {showGuide && (
+                <UserGuideModal onClose={() => setShowGuide(false)} />
             )}
 
             {/* Footer */}

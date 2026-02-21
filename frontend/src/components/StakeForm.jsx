@@ -140,7 +140,13 @@ export default function StakeForm({ provider, account, onStakeSuccess, refreshTr
             } else if (msg.includes('user rejected') || msg.includes('ACTION_REJECTED')) {
                 alert('❌ Transaction rejected by user.');
             } else {
-                alert('❌ Staking failed: ' + (error?.reason || error?.shortMessage || error?.message || 'Unknown error'));
+                // Try to extract the execution reverted message
+                const match = msg.match(/execution reverted: "([^"]+)"/);
+                if (match && match[1]) {
+                    alert('❌ Staking failed: ' + match[1]);
+                } else {
+                    alert('❌ Staking failed: ' + (error?.shortMessage || error?.reason || 'Unknown error'));
+                }
             }
         } finally {
             setStaking(false);

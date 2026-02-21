@@ -83,7 +83,19 @@ export default function SwapComponent({ provider, account, onSwapSuccess }) {
             alert('Swap successful!');
         } catch (error) {
             console.error("Swap failed:", error);
-            alert('Swap failed: ' + (error.reason || error.message));
+            const msg = error?.reason || error?.data?.message || error?.message || '';
+            const match = msg.match(/execution reverted: "([^"]+)"/);
+
+            if (match && match[1]) {
+                alert('❌ Swap failed: ' + match[1]);
+            } else if (msg.includes('user rejected') || msg.includes('ACTION_REJECTED')) {
+                alert('❌ Transaction rejected by user.');
+            } else if (msg.includes('execution reverted:')) {
+                const cleanMsg = msg.substring(msg.indexOf('execution reverted:') + 19).split(',')[0].replace(/"/g, '').trim();
+                alert('❌ Swap failed: ' + cleanMsg);
+            } else {
+                alert('❌ Swap failed: ' + (error?.shortMessage || error?.reason || 'Unknown error'));
+            }
         } finally {
             setLoading(false);
         }

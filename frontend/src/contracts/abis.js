@@ -4,6 +4,8 @@ export const TOKEN_SWAP_ABI = [
     'function sellTokens(uint256 amount)',
     'function rate() view returns (uint256)',
     'function sellFeePercentage() view returns (uint256)',
+    'function minSellAmount() view returns (uint256)',
+    'function setMinSellAmount(uint256 _newMin)',
     'event TokensPurchased(address indexed buyer, address indexed token, uint256 amountOfETH, uint256 amountOfTokens)',
     'event TokensSold(address indexed seller, address indexed token, uint256 amountOfTokens, uint256 amountOfETH)'
 ];
@@ -29,11 +31,9 @@ export const TIME_LOCKED_CHEST_ABI = [
     'function activeLocked() view returns (uint256)',
     'function totalPaidOut() view returns (uint256)',
     'function minStake() view returns (uint256)',
-    'function minWithdraw() view returns (uint256)',
     'function fee() view returns (uint256)',
     'function owner() view returns (address)',
     'function setMinStake(uint256 _minStake)',
-    'function setMinWithdraw(uint256 _minWithdraw)',
     'function setFee(uint256 _fee)',
     'event LockCreated(address indexed user, uint256 indexed lockIndex, uint256 amount, uint256 duration, uint256 lockTime, uint256 randomSeed)',
     'event LockClaimed(address indexed user, uint256 indexed lockIndex, uint256 stakedAmount, uint256 payout, uint256 guaranteedAmount, uint256 riskReward)'

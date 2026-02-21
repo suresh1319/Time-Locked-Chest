@@ -12,11 +12,13 @@ contract TokenSwap is Ownable, ReentrancyGuard {
     IERC20 public immutable token;
     uint256 public rate; // Number of tokens for 1 ETH (e.g., 1000)
     uint256 public sellFeePercentage; // Fee in percent (e.g., 10 for 10%)
+    uint256 public minSellAmount = 0; // Minimum tokens to sell
 
     event TokensPurchased(address indexed buyer, address indexed token, uint256 amountOfETH, uint256 amountOfTokens);
     event TokensSold(address indexed seller, address indexed token, uint256 amountOfTokens, uint256 amountOfETH);
     event RateUpdated(uint256 newRate);
     event FeeUpdated(uint256 newFee);
+    event MinSellAmountUpdated(uint256 newMinAmount);
 
     constructor(address _token, uint256 _rate, uint256 _sellFeePercentage) Ownable(msg.sender) {
         require(_token != address(0), "Invalid token address");
@@ -43,10 +45,9 @@ contract TokenSwap is Ownable, ReentrancyGuard {
     // Sell tokens for ETH
     function sellTokens(uint256 _amount) external nonReentrant {
         require(_amount > 0, "Amount must be greater than 0");
+        require(_amount >= minSellAmount, "Amount below minimum sell amount");
         
         uint256 ethAmount = _amount / rate;
-        // BUG-4: Guard against integer division rounding to zero.
-        require(ethAmount > 0, "Token amount too small to sell");
 
         uint256 fee = (ethAmount * sellFeePercentage) / 100;
         uint256 payout = ethAmount - fee;
@@ -61,7 +62,7 @@ contract TokenSwap is Ownable, ReentrancyGuard {
         emit TokensSold(msg.sender, address(token), _amount, payout);
     }
 
-    // BUG-5: Allow direct ETH deposits for liquidity funding.
+    // Allow direct ETH deposits for liquidity funding.
     receive() external payable {}
 
     // Owner functions to manage liquidity and settings
@@ -83,5 +84,10 @@ contract TokenSwap is Ownable, ReentrancyGuard {
         require(_newFee <= 30, "Fee too high");
         sellFeePercentage = _newFee;
         emit FeeUpdated(_newFee);
+    }
+
+    function setMinSellAmount(uint256 _newMin) external onlyOwner {
+        minSellAmount = _newMin;
+        emit MinSellAmountUpdated(_newMin);
     }
 }

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-/**
+/*
  * @title TimeLockedChest
  * @dev A Web3 mini-game where users lock ERC-20 tokens for fixed durations
  * with guaranteed returns and risk-based multipliers
@@ -29,7 +29,6 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
     
     // Configurable limits and fees
     uint256 public minStake = 1 ether;
-    uint256 public minWithdraw = 0;
     uint256 public fee = 2; // 2% default fee
 
     
@@ -64,7 +63,6 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
     );
 
     event MinStakeUpdated(uint256 newMinStake);
-    event MinWithdrawUpdated(uint256 newMinWithdraw);
     event FeeUpdated(uint256 newFee);
     
     // Initializes the contract with the ERC20 token address.
@@ -78,7 +76,6 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
         require(amount >= minStake, "Amount below minimum stake");
         require(duration == DURATION_1H || duration == DURATION_6H || duration == DURATION_24H, "Invalid duration");
 
-        // BUG-2: Verify treasury solvency before accepting the stake.
         // Worst-case payout is 5x the staked amount (jackpot multiplier).
         uint256 maxPossiblePayout = amount * 5;
         require(
@@ -130,7 +127,6 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
         uint256 feeAmount = (payout * fee) / 100;
         uint256 payoutAfterFee = payout - feeAmount;
 
-        require(payoutAfterFee >= minWithdraw, "Payout below minimum withdrawal");
         require(token.balanceOf(address(this)) >= payout, "Insufficient treasury balance");
 
         // BUG-3: Track gross payout and fees separately for accurate accounting.
@@ -207,10 +203,7 @@ contract TimeLockedChest is ReentrancyGuard, Ownable {
         emit MinStakeUpdated(_minStake);
     }
 
-    function setMinWithdraw(uint256 _minWithdraw) external onlyOwner {
-        minWithdraw = _minWithdraw;
-        emit MinWithdrawUpdated(_minWithdraw);
-    }
+
 
     function setFee(uint256 _fee) external onlyOwner {
         require(_fee <= 10, "Fee cannot exceed 10%");

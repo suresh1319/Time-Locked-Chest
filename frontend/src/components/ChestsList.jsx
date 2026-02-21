@@ -85,7 +85,19 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
             await loadChests();
         } catch (error) {
             console.error('Claim error:', error);
-            alert('❌ Claim failed: ' + error.message);
+            const msg = error?.reason || error?.data?.message || error?.message || '';
+            const match = msg.match(/execution reverted: "([^"]+)"/);
+
+            if (match && match[1]) {
+                alert('❌ Claim failed: ' + match[1]);
+            } else if (msg.includes('user rejected') || msg.includes('ACTION_REJECTED')) {
+                alert('❌ Transaction rejected by user.');
+            } else if (msg.includes('execution reverted:')) {
+                const cleanMsg = msg.substring(msg.indexOf('execution reverted:') + 19).split(',')[0].replace(/"/g, '').trim();
+                alert('❌ Claim failed: ' + cleanMsg);
+            } else {
+                alert('❌ Claim failed: ' + (error?.shortMessage || error?.reason || 'Unknown error'));
+            }
         } finally {
             setClaiming({ ...claiming, [index]: false });
         }
@@ -147,7 +159,7 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
                 </span>
             </div>
 
-            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                 {chests.map((chest) => {
                     const unlocked = isUnlocked(chest.lockTime, chest.duration);
                     const timeRemaining = getTimeRemaining(chest.lockTime, chest.duration);

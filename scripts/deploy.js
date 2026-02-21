@@ -45,15 +45,16 @@ async function main() {
 
     console.log("✅ TokenSwap deployed to:", tokenSwapAddress);
 
-    // Provide Liquidity to TokenSwap (100,000 SCAI)
-    const liquidityAmount = hre.ethers.parseEther("100000");
-    await scaiToken.transfer(tokenSwapAddress, liquidityAmount);
-    console.log("   Funded TokenSwap with:", hre.ethers.formatEther(liquidityAmount), "SCAI\n");
+    // Provide Liquidity to TokenSwap (300,000 SCAI - 30%)
+    const swapLiquidity = hre.ethers.parseEther("300000");
+    await scaiToken.transfer(tokenSwapAddress, swapLiquidity);
+    console.log("   Funded TokenSwap with:", hre.ethers.formatEther(swapLiquidity), "SCAI\n");
 
-    // Provide Treasury Funding to TimeLockedChest (100,000 SCAI)
+    // Provide Treasury Funding to TimeLockedChest (650,000 SCAI - 65%)
     // This allows the contract to pay out rewards immediately
-    await scaiToken.transfer(chestAddress, liquidityAmount);
-    console.log("   Funded TimeLockedChest treasury with:", hre.ethers.formatEther(liquidityAmount), "SCAI\n");
+    const treasuryAmount = hre.ethers.parseEther("650000");
+    await scaiToken.transfer(chestAddress, treasuryAmount);
+    console.log("   Funded TimeLockedChest treasury with:", hre.ethers.formatEther(treasuryAmount), "SCAI\n");
 
     // ========== Save Deployment Addresses ==========
     const deploymentData = {
