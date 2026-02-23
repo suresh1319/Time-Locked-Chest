@@ -8,7 +8,7 @@
 - Etherscan API key
 
 ## 🚀 Quick Start
-
+![alt text](image.png)
 ### 1. Install Dependencies
 
 ```bash
@@ -57,6 +57,8 @@ npm run deploy
 This will:
 - Deploy `SCAIToken.sol`
 - Deploy `TimeLockedChest.sol`
+- Deploy `TokenSwap.sol`
+- Automatically fund the chest treasury and TokenSwap liquidity pool
 - Save addresses to `deployed-addresses.json`
 
 ### 6. Verify Contracts on Etherscan
@@ -65,37 +67,23 @@ After deployment, verify the contracts:
 
 ```bash
 # Verify SCAIToken
-npx hardhat verify--network sepolia <SCAI_TOKEN_ADDRESS>
+npx hardhat verify --network sepolia <SCAI_TOKEN_ADDRESS>
 
 # Verify TimeLockedChest
 npx hardhat verify --network sepolia <CHEST_ADDRESS> <SCAI_TOKEN_ADDRESS>
+
+# Verify TokenSwap
+npx hardhat verify --network sepolia <TOKEN_SWAP_ADDRESS> <SCAI_TOKEN_ADDRESS> 100000 2
 ```
 
 Replace the addresses with the ones from `deployed-addresses.json`.
 
-## 💰 Fund the Treasury
+## 💰 Treasury Funding
 
-The TimeLockedChest contract needs tokens to pay out rewards. Transfer SCAI tokens to the contract:
+> [!NOTE]
+> The expected treasury funding for the `TimeLockedChest` and liquidity for the `TokenSwap` are automatically sent during the deployment script execution.
 
-### Using Etherscan (Recommended)
-
-1. Go to the SCAIToken contract on Sepolia Etherscan
-2. Click "Write Contract" → "Connect to Web3"
-3. Use the `transfer` function:
-   - `to`: TimeLockedChest contract address
-   - `amount`: 100000 * 10^18 (for 100,000 SCAI)
-
-### Using Hardhat Console
-
-```bash
-npx hardhat console --network sepolia
-```
-
-```javascript
-const scai = await ethers.getContractAt("SCAIToken", "SCAI_TOKEN_ADDRESS");
-const chest = "CHEST_ADDRESS";
-await scai.transfer(chest, ethers.parseEther("100000"));
-```
+If manual funding is later required, you can use the `transfer` function on the SCAIToken contract to allocate more rewards to the chest.
 
 ## 🎮 Interact with Contracts
 
@@ -231,20 +219,36 @@ After deployment, your addresses will be in `deployed-addresses.json`:
 
 1. Deploy to Sepolia testnet
 2. Verify contracts on Etherscan
-3. Fund the treasury with SCAI tokens
-4. Build and deploy the frontend application
-5. Share with users!
+3. Start local development with the frontend application
+4. Share with users!
 
-## 🎨 Frontend (Coming Next)
+## 🎨 Frontend Application
 
-The React frontend will include:
-- MetaMask wallet connection
-- Token approval interface
-- Staking form with duration selection
-- Live guarantee/risk display
-- Active chests dashboard
-- Claim rewards button
-- Treasure-themed UI with animations
+The complete React frontend is available in the `frontend` directory.
+
+### Quick Start
+
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+The frontend includes:
+- Secure MetaMask wallet connection
+- Integrated TokenSwap interface to easily acquire SCAI tokens
+- Staking form with duration selection and expected payout previews
+- Active chests dashboard to manage and claim rewards
+- Beautiful, fully animated user interface
 
 ---
 
