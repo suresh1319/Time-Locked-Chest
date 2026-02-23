@@ -64,7 +64,7 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
                 })
             );
 
-            setChests(chestsWithData);
+            setChests(chestsWithData.reverse());
         } catch (error) {
             console.error('Error loading chests:', error);
         } finally {
@@ -159,7 +159,7 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
                 </span>
             </div>
 
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+            <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2">
                 {chests.map((chest) => {
                     const unlocked = isUnlocked(chest.lockTime, chest.duration);
                     const timeRemaining = getTimeRemaining(chest.lockTime, chest.duration);
