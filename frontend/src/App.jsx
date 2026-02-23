@@ -161,7 +161,7 @@ function App() {
                         </div>
 
                         {/* Two-column layout for Game */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                             {/* Stake Form */}
                             <div>
                                 <StakeForm
@@ -173,12 +173,14 @@ function App() {
                             </div>
 
                             {/* Chests List */}
-                            <div>
-                                <ChestsList
-                                    provider={provider}
-                                    account={account}
-                                    refreshTrigger={refreshTrigger}
-                                />
+                            <div className="relative">
+                                <div className="lg:absolute lg:inset-0 w-full h-full">
+                                    <ChestsList
+                                        provider={provider}
+                                        account={account}
+                                        refreshTrigger={refreshTrigger}
+                                    />
+                                </div>
                             </div>
                         </div>
 

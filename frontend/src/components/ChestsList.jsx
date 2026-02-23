@@ -130,9 +130,9 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
 
     if (loading) {
         return (
-            <div className="card">
+            <div className="card h-full flex flex-col justify-center items-center text-center py-12">
                 <h2 className="text-2xl font-bold mb-6">Your Treasure Chests</h2>
-                <div className="text-center py-12">
+                <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-treasure-500"></div>
                     <p className="text-white/60 mt-4">Loading your chests...</p>
                 </div>
@@ -142,7 +142,7 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
 
     if (chests.length === 0) {
         return (
-            <div className="card text-center py-12">
+            <div className="card h-full flex flex-col justify-center items-center text-center py-12">
                 <div className="text-6xl mb-4">🏺</div>
                 <h3 className="text-xl font-semibold mb-2">No Active Chests</h3>
                 <p className="text-white/60">Lock some tokens to create your first treasure chest!</p>
@@ -151,15 +151,15 @@ export default function ChestsList({ provider, account, refreshTrigger }) {
     }
 
     return (
-        <div className="card">
-            <div className="flex items-center justify-between mb-6">
+        <div className="card h-full flex flex-col">
+            <div className="flex items-center justify-between mb-6 shrink-0">
                 <h2 className="text-2xl font-bold">Your Treasure Chests</h2>
                 <span className="bg-treasure-500/20 px-3 py-1 rounded-full text-sm font-semibold">
                     {chests.filter(c => !c.claimed).length} Active
                 </span>
             </div>
 
-            <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2">
+            <div className="space-y-4 max-h-[250px] lg:max-h-none overflow-y-auto pr-2 flex-1 relative">
                 {chests.map((chest) => {
                     const unlocked = isUnlocked(chest.lockTime, chest.duration);
                     const timeRemaining = getTimeRemaining(chest.lockTime, chest.duration);
